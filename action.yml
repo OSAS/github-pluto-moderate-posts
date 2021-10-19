@@ -1,0 +1,19 @@
+---
+name: "Create moderated posts"
+description: "Use Pluto database to generate posts moderated using PRs"
+inputs:
+  post-path:
+    description: "Template of the post file path (relative to project root)"
+    required: True
+  label:
+    description: "Name of the label to use for feeds PRs"
+    required: False
+    default: "feeds"
+outputs: {}
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.post-path }}
+    - ${{ inputs.label }}
+
