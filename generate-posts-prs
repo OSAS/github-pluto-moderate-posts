@@ -114,6 +114,8 @@ unless ENV.has_key?('GITHUB_TOKEN')
 end
 gh_client = Octokit::Client.new(
   access_token: ENV.fetch("GITHUB_TOKEN"))
+# get all paged results and concatenate automagically
+gh_client.auto_paginate = true
 
 event_json = File.read(ENV.fetch("GITHUB_EVENT_PATH"))
 event = JSON.parse(event_json)
