@@ -117,13 +117,9 @@ gh_client = Octokit::Client.new(
 # get all paged results and concatenate automagically
 gh_client.auto_paginate = true
 
-event_json = File.read(ENV.fetch("GITHUB_EVENT_PATH"))
-event = JSON.parse(event_json)
-#puts "Event:"
-#pp event
-
-repo_name = event['repository']['full_name']
-default_branch = event['repository']['default_branch']
+# GITHUB_EVENT_PATH is unfortunately almost empty in schedule mode
+repo_name = ENV.fetch("GITHUB_REPOSITORY")
+default_branch = ENV.fetch("GITHUB_REF").split('/')[-1]
 puts "Repo Name: #{repo_name}"
 puts "Default Branch: #{default_branch}"
 
