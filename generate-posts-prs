@@ -99,8 +99,8 @@ end
 
 
 if ARGV.count() != 2
-  puts "parameter(s) missing"
-   exit 1
+  puts "ERROR: Parameter(s) missing"
+  exit 1
 end
 @post_path = ARGV[0]
 label_name = ARGV[1]
@@ -109,7 +109,7 @@ last_commit_sha = ENV.fetch('GITHUB_SHA')
 puts "Last Commit SHA: #{last_commit_sha}"
 
 unless ENV.has_key?('GITHUB_TOKEN')
-  puts "Please provide GITHUB_TOKEN as environment variable"
+  puts "ERROR: Please provide GITHUB_TOKEN as environment variable"
   exit 1
 end
 gh_client = Octokit::Client.new(
@@ -148,7 +148,7 @@ db_config = {
   database: './planet.db'
 }
 unless File.exists?(db_config[:database])
-  puts "database file '#{db_config[:database]}' is missing"
+  puts "ERROR: Database file '#{db_config[:database]}' is missing"
   exit 1
 end
 Pluto.connect(db_config)
@@ -183,7 +183,7 @@ Pluto::Model::Item.latest.each_with_index do |item, i|
       last_commit_sha
     )
   rescue
-    puts "  Cannot create branch, skipping"
+    puts "  ERROR: Cannot create branch, skipping"
     pr_gen_err = true
     next
   end
@@ -199,7 +199,7 @@ Pluto::Model::Item.latest.each_with_index do |item, i|
     :branch => pr_branch_name
     )
   rescue
-    puts "  Cannot create commit, skipping"
+    puts "  ERROR: Cannot create commit, skipping"
     pr_gen_err = true
     next
   end
@@ -215,7 +215,7 @@ Pluto::Model::Item.latest.each_with_index do |item, i|
       pr_title
     )
   rescue
-    puts "  Cannot create PR, skipping"
+    puts "  ERROR: Cannot create PR, skipping"
     pr_gen_err = true
     next
   end
@@ -230,7 +230,7 @@ Pluto::Model::Item.latest.each_with_index do |item, i|
       [label_name]
     )
   rescue
-    puts "  Cannot add label to PR, skipping"
+    puts "  ERROR: Cannot add label to PR, skipping"
     pr_gen_err = true
     next
   end
