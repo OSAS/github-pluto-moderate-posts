@@ -117,7 +117,7 @@ gh_client = Octokit::Client.new(
 
 event_json = File.read(ENV.fetch("GITHUB_EVENT_PATH"))
 event = JSON.parse(event_json)
-puts "Event:"
+#puts "Event:"
 #pp event
 
 repo_name = event['repository']['full_name']
@@ -140,8 +140,8 @@ prs = gh_client.list_issues(repo_name,
 #puts "PRs:"
 #pp prs
 pr_titles_ids = Hash[prs.collect {|pr| [pr[:title], pr[:number]] }]
-puts "Found PRs:"
-pp pr_titles_ids
+#puts "Found PRs:"
+#pp pr_titles_ids
 
 db_config = {
   adapter: 'sqlite3',
@@ -153,6 +153,8 @@ unless File.exists?(db_config[:database])
 end
 Pluto.connect(db_config)
 
+pr_gen_err = false
+
 Pluto::Model::Item.latest.each_with_index do |item, i|
   puts "[#{i+1}] {#{item.feed.title}} #{item.title}"
 
@@ -161,6 +163,7 @@ Pluto::Model::Item.latest.each_with_index do |item, i|
       item.url &&
       (item.content || item.summary)
     puts "  post missing basic info"
+    pr_gen_err = true
     next
   end
   post = generate_post(item)
@@ -181,6 +184,7 @@ Pluto::Model::Item.latest.each_with_index do |item, i|
     )
   rescue
     puts "  Cannot create branch, skipping"
+    pr_gen_err = true
     next
   end
 
@@ -196,6 +200,7 @@ Pluto::Model::Item.latest.each_with_index do |item, i|
     )
   rescue
     puts "  Cannot create commit, skipping"
+    pr_gen_err = true
     next
   end
   commit_sha = commit[:commit][:sha]
@@ -211,6 +216,7 @@ Pluto::Model::Item.latest.each_with_index do |item, i|
     )
   rescue
     puts "  Cannot create PR, skipping"
+    pr_gen_err = true
     next
   end
   pr_id = pr[:number]
@@ -225,10 +231,9 @@ Pluto::Model::Item.latest.each_with_index do |item, i|
     )
   rescue
     puts "  Cannot add label to PR, skipping"
+    pr_gen_err = true
     next
   end
-
-  # TEST: only create one at a time
-  break
 end
 
+exit pr_gen_err ? 2 : 0
